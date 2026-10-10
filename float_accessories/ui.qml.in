@@ -863,8 +863,8 @@ Item {
         }
 
         // True while a preset is filling the controls. Their change handlers skip
-        // sending during that, and one sim-load goes out afterwards - ten separate
-        // packets would put the board through nine states nobody asked for.
+        // sending during that, and one sim-load goes out afterwards - twelve separate
+        // packets would put the board through eleven states nobody asked for.
         property bool pushing: false
 
         onOpened: {
@@ -958,27 +958,29 @@ Item {
                             Layout.fillWidth: true
                             textRole: "text"
                             model: [
-                                {text: "Connecting",       st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: false},
-                                {text: "Idle",             st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Idle, low batt",   st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.08, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Charging",         st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.42, pitch:  0, chg: true,  hand: false, link: true},
-                                {text: "Footpad left",     st: 0,  sw: 1, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Footpad right",    st: 0,  sw: 2, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Footpad both",     st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Mall grab",        st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch: 75, chg: false, hand: false, link: true},
-                                {text: "Riding",           st: 1,  sw: 3, sat: 2, rpm:  1500, duty: 0.35, batt: 0.55, pitch:  2, chg: false, hand: false, link: true},
-                                {text: "Duty warn",        st: 1,  sw: 3, sat: 2, rpm:  1800, duty: 0.65, batt: 0.50, pitch:  3, chg: false, hand: false, link: true},
-                                {text: "Duty high",        st: 1,  sw: 3, sat: 2, rpm:  2200, duty: 0.85, batt: 0.45, pitch:  4, chg: false, hand: false, link: true},
-                                {text: "Pad off at speed", st: 1,  sw: 1, sat: 2, rpm:  1500, duty: 0.35, batt: 0.55, pitch:  2, chg: false, hand: false, link: true},
-                                {text: "Tiltback",         st: 2,  sw: 3, sat: 3, rpm:  2000, duty: 0.70, batt: 0.40, pitch:  6, chg: false, hand: false, link: true},
-                                {text: "Wheelslip",        st: 3,  sw: 3, sat: 2, rpm:  1600, duty: 0.50, batt: 0.50, pitch:  2, chg: false, hand: false, link: true},
-                                {text: "Reverse",          st: 1,  sw: 3, sat: 2, rpm: -1500, duty: 0.35, batt: 0.50, pitch: -2, chg: false, hand: false, link: true},
-                                {text: "Darkride",         st: 4,  sw: 3, sat: 2, rpm: -1500, duty: 0.40, batt: 0.50, pitch:  2, chg: false, hand: false, link: true},
-                                {text: "Flywheel",         st: 5,  sw: 3, sat: 2, rpm:  1200, duty: 0.30, batt: 0.50, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Fault - switch",   st: 8,  sw: 1, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Quickstop",        st: 13, sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Disabled",         st: 15, sw: 0, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
-                                {text: "Hand test",        st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, batt: 0.55, pitch:  0, chg: false, hand: true,  link: true}
+                                {text: "Connecting",       st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: false},
+                                {text: "Idle",             st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Idle, low batt",   st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.08, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Charging",         st: 0,  sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.42, pitch:  0, chg: true,  hand: false, link: true},
+                                {text: "Footpad left",     st: 0,  sw: 1, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Footpad right",    st: 0,  sw: 2, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Footpad both",     st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Mall grab",        st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch: 75, chg: false, hand: false, link: true},
+                                {text: "Riding",           st: 1,  sw: 3, sat: 2, rpm:  1500, duty: 0.35, phase:  0.30, bat:  0.20, batt: 0.55, pitch:  2, chg: false, hand: false, link: true},
+                                {text: "Duty warn",        st: 1,  sw: 3, sat: 2, rpm:  1800, duty: 0.65, phase:  0.45, bat:  0.35, batt: 0.50, pitch:  3, chg: false, hand: false, link: true},
+                                {text: "Duty high",        st: 1,  sw: 3, sat: 2, rpm:  2200, duty: 0.85, phase:  0.55, bat:  0.45, batt: 0.45, pitch:  4, chg: false, hand: false, link: true},
+                                {text: "Phase limited",    st: 1,  sw: 3, sat: 2, rpm:  1600, duty: 0.40, phase:  0.85, bat:  0.50, batt: 0.45, pitch:  4, chg: false, hand: false, link: true},
+                                {text: "Hard braking",     st: 1,  sw: 3, sat: 2, rpm:  1400, duty: 0.30, phase: -0.75, bat: -0.90, batt: 0.80, pitch: -6, chg: false, hand: false, link: true},
+                                {text: "Pad off at speed", st: 1,  sw: 1, sat: 2, rpm:  1500, duty: 0.35, phase:  0.30, bat:  0.20, batt: 0.55, pitch:  2, chg: false, hand: false, link: true},
+                                {text: "Tiltback",         st: 2,  sw: 3, sat: 3, rpm:  2000, duty: 0.70, phase:  0.50, bat:  0.40, batt: 0.40, pitch:  6, chg: false, hand: false, link: true},
+                                {text: "Wheelslip",        st: 3,  sw: 3, sat: 2, rpm:  1600, duty: 0.50, phase:  0.20, bat:  0.15, batt: 0.50, pitch:  2, chg: false, hand: false, link: true},
+                                {text: "Reverse",          st: 1,  sw: 3, sat: 2, rpm: -1500, duty: 0.35, phase:  0.30, bat:  0.20, batt: 0.50, pitch: -2, chg: false, hand: false, link: true},
+                                {text: "Darkride",         st: 4,  sw: 3, sat: 2, rpm: -1500, duty: 0.40, phase:  0.35, bat:  0.25, batt: 0.50, pitch:  2, chg: false, hand: false, link: true},
+                                {text: "Flywheel",         st: 5,  sw: 3, sat: 2, rpm:  1200, duty: 0.30, phase:  0.15, bat:  0.10, batt: 0.50, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Fault - switch",   st: 8,  sw: 1, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Quickstop",        st: 13, sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Disabled",         st: 15, sw: 0, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: false, link: true},
+                                {text: "Hand test",        st: 0,  sw: 3, sat: 2, rpm:     0, duty: 0.00, phase:  0.00, bat:  0.00, batt: 0.55, pitch:  0, chg: false, hand: true,  link: true}
                             ]
                             currentIndex: 8
                             onActivated: simApplyPreset(model[currentIndex])
@@ -1143,6 +1145,68 @@ Item {
                                 })
                                 item.interactionReleased.connect(function() {
                                     simFlushSlider("sim-in-duty", simDutyLoader.item.value)
+                                })
+                            }
+                        }
+                    }
+
+                    ColumnLayout {
+                        spacing: cardStyle.labelSpacing
+                        Layout.fillWidth: true
+                        Text {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            color: fieldLabelStyle.color
+                            font.pixelSize: fieldLabelStyle.pixelSize
+                            text: "Phase utilization - motor current against the ESC limit, negative is braking. Sent to the remote."
+                        }
+                        Loader {
+                            id: simPhaseLoader
+                            sourceComponent: customValueSlider
+                            onLoaded: {
+                                item.from = -1.0
+                                item.to = 1.0
+                                item.stepSize = 0.01
+                                item.snapMode = Slider.SnapAlways
+                                item.value = 0.30
+                                item.formatValue = function(v) { return Math.round(v * 100) + "%" }
+                                item.valueChanged.connect(function() {
+                                    if (!simPopup.pushing)
+                                        simSendFThrottled("sim-in-phase", simPhaseLoader.item.value)
+                                })
+                                item.interactionReleased.connect(function() {
+                                    simFlushSlider("sim-in-phase", simPhaseLoader.item.value)
+                                })
+                            }
+                        }
+                    }
+
+                    ColumnLayout {
+                        spacing: cardStyle.labelSpacing
+                        Layout.fillWidth: true
+                        Text {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            color: fieldLabelStyle.color
+                            font.pixelSize: fieldLabelStyle.pixelSize
+                            text: "Battery utilization - battery current against the ESC limit, negative is regen. Sent to the remote."
+                        }
+                        Loader {
+                            id: simBatLoader
+                            sourceComponent: customValueSlider
+                            onLoaded: {
+                                item.from = -1.0
+                                item.to = 1.0
+                                item.stepSize = 0.01
+                                item.snapMode = Slider.SnapAlways
+                                item.value = 0.20
+                                item.formatValue = function(v) { return Math.round(v * 100) + "%" }
+                                item.valueChanged.connect(function() {
+                                    if (!simPopup.pushing)
+                                        simSendFThrottled("sim-in-bat", simBatLoader.item.value)
+                                })
+                                item.interactionReleased.connect(function() {
+                                    simFlushSlider("sim-in-bat", simBatLoader.item.value)
                                 })
                             }
                         }
@@ -5238,8 +5302,8 @@ Item {
         simThrottleTimer.stop()
     }
 
-    // Push all ten as one packet. Used on open and after a preset: ten separate
-    // setqs would walk the board through nine states nobody chose.
+    // Push all twelve as one packet. Used on open and after a preset: twelve
+    // separate setqs would walk the board through eleven states nobody chose.
     function simPushAll() {
         sendSim("(sim-load " + [
             simState.model[simState.currentIndex].value,
@@ -5247,6 +5311,8 @@ Item {
             simSat.model[simSat.currentIndex].value,
             simRpmLoader.item.value.toFixed(2),
             simDutyLoader.item.value.toFixed(2),
+            simPhaseLoader.item.value.toFixed(2),
+            simBatLoader.item.value.toFixed(2),
             simBattLoader.item.value.toFixed(2),
             simPitchLoader.item.value.toFixed(2),
             simCharging.checked ? "t" : "nil",
@@ -5265,6 +5331,8 @@ Item {
         simSat.currentIndex = simSat.indexOfValue(preset.sat)
         simRpmLoader.item.value = preset.rpm
         simDutyLoader.item.value = preset.duty
+        simPhaseLoader.item.value = preset.phase
+        simBatLoader.item.value = preset.bat
         simBattLoader.item.value = preset.batt
         simPitchLoader.item.value = preset.pitch
         simCharging.checked = preset.chg
