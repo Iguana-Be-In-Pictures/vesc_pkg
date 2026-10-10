@@ -203,7 +203,7 @@
             })
         }))
         (cons 'get-telemetry (fn () {
-            (list fault-code pitch-angle roll-angle state switch-state vin rpm speed tot-current duty-cycle-now distance-abs fet-temp-filtered motor-temp-filtered odometer battery-percent-remaining)
+            (list fault-code pitch-angle roll-angle state switch-state vin rpm speed tot-current duty-cycle-now (phase-utilization) (battery-utilization) distance-abs fet-temp-filtered motor-temp-filtered odometer battery-percent-remaining)
         }))
         (cons 'send-msg (fn (text) {
             (send-msg text)

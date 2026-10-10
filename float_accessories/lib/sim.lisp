@@ -1,12 +1,12 @@
 ; Test mode. Fakes the telemetry globals float-pkg-telemetry-rx writes, so the
 ; LED state machine cannot tell the difference.
 ;
-; The ten sim-in-* globals below are the whole state - nothing composes with them
+; The twelve sim-in-* globals below are the whole state - nothing composes with them
 ; or overrides them. Presets live in the QML panel and act by filling the
 ; controls, so what reaches the board is only ever a set of values.
 ;
 ; REPL: (sim-on) / (sim-off) / (sim-status), then setq any sim-in-* value, or
-; (sim-load 1 3 2 1500.0 0.35 0.55 0.0 nil nil t) for all ten. Re-applied every
+; (sim-load 1 3 2 1500.0 0.35 0.30 0.20 0.55 0.0 nil nil t) for all twelve. Re-applied every
 ; tick, so a setq holds until something changes it.
 
 @const-start
@@ -22,26 +22,39 @@
 ; sat: above 2 strobes the status bar (tiltback actually pulling back).
 ; rpm: signed, sets direction; duty bar appears above 250.
 ; pitch: above 70 while not running is mall grab.
+; phase / bat: -1..1 utilization, negative = braking / regen. The currents are
+;   derived from these against the fake limits below.
 ; link: nil = no can-id and a stale link, i.e. "connecting".
 (def sim-in-state 0)
 (def sim-in-switch 0)
 (def sim-in-sat 2)
 (def sim-in-rpm 0.0)
 (def sim-in-duty 0.0)
+(def sim-in-phase 0.0)
+(def sim-in-bat 0.0)
 (def sim-in-batt 0.55)
 (def sim-in-pitch 0.0)
 (def sim-in-charging nil)
 (def sim-in-handtest nil)
 (def sim-in-link t)
 
-; One packet per preset. Ten separate setqs would walk the board through nine
-; states nobody chose.
-(defun sim-load (st sw sat r duty batt pitch chg hand link) {
+; Stand-in ESC current limits (amps), unequal so braking/regen visibly use the
+; min ones. Cleared on exit; a real ESC's are fetched again on rediscovery.
+(def SIM-MOTOR-MAX 100.0)
+(def SIM-MOTOR-MIN 80.0)
+(def SIM-BAT-MAX 50.0)
+(def SIM-BAT-MIN 20.0)
+
+; One packet per preset. Twelve separate setqs would walk the board through
+; eleven states nobody chose.
+(defun sim-load (st sw sat r duty phase bat batt pitch chg hand link) {
     (setq sim-in-state st)
     (setq sim-in-switch sw)
     (setq sim-in-sat sat)
     (setq sim-in-rpm r)
     (setq sim-in-duty duty)
+    (setq sim-in-phase phase)
+    (setq sim-in-bat bat)
     (setq sim-in-batt batt)
     (setq sim-in-pitch pitch)
     (setq sim-in-charging chg)
@@ -70,8 +83,12 @@
     (setq speed (/ sim-in-rpm 100.0))
     (setq vin (+ 40.0 (* 20.0 sim-in-batt)))
     (setq roll-angle 0.0)
-    (setq tot-current (* 60.0 sim-in-duty))
-    (setq bat-current (* 45.0 sim-in-duty))
+    (setq esc-motor-current-max SIM-MOTOR-MAX)
+    (setq esc-motor-current-min SIM-MOTOR-MIN)
+    (setq esc-bat-current-max SIM-BAT-MAX)
+    (setq esc-bat-current-min SIM-BAT-MIN)
+    (setq tot-current (* sim-in-phase (if (< sim-in-phase 0) SIM-MOTOR-MIN SIM-MOTOR-MAX)))
+    (setq bat-current (* sim-in-bat (if (< sim-in-bat 0) SIM-BAT-MIN SIM-BAT-MAX)))
     (setq fet-temp-filtered (+ 30.0 (* 25.0 sim-in-duty)))
     (setq motor-temp-filtered (+ 28.0 (* 30.0 sim-in-duty)))
     ; Not simulated: no LED branch reads it, and state covers the fault displays.
@@ -141,6 +158,10 @@
     (setq vin -1)
     (setq tot-current 0)
     (setq bat-current 0)
+    (setq esc-motor-current-max 0)
+    (setq esc-motor-current-min 0)
+    (setq esc-bat-current-max 0)
+    (setq esc-bat-current-min 0)
     (setq fet-temp-filtered 0)
     (setq motor-temp-filtered 0)
     (setq can-id -1)
@@ -157,6 +178,8 @@
             " sat " (str-from-n sim-in-sat "%d")
             " rpm " (str-from-n (to-float sim-in-rpm) "%.0f")
             " duty " (str-from-n (to-float sim-in-duty) "%.2f")
+            " phase " (str-from-n (to-float sim-in-phase) "%.2f")
+            " bat " (str-from-n (to-float sim-in-bat) "%.2f")
             " batt " (str-from-n (to-float sim-in-batt) "%.2f")
             " pitch " (str-from-n (to-float sim-in-pitch) "%.0f")
             (if sim-in-charging " chg" "")

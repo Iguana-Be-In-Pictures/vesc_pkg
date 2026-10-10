@@ -33,6 +33,13 @@
 (def cell-type)
 (def voltage-curve)
 (def need-fetch-cells nil)
+(def need-fetch-limits nil)
+; ESC current limits as positive magnitudes, for phase/battery utilization. 0 = unknown,
+; which drops that term until fetch-current-limits succeeds.
+(def esc-motor-current-max 0)
+(def esc-motor-current-min 0)
+(def esc-bat-current-max 0)
+(def esc-bat-current-min 0)
 (def last-fetch-cells-time 0)
 
 (def FLOAT_MAGIC 101)
@@ -154,6 +161,11 @@
                 (fetch-series-cells)
                 (apply-battery-config (get-config 'soc-type) (get-config 'cell-type))
             })
+
+            (if need-fetch-limits {
+                (setq need-fetch-limits nil)
+                (fetch-current-limits)
+            })
         })
 
         (setq loop-end-time (secs-since 0))
@@ -225,6 +237,62 @@
             (print (str-merge "Battery cells (from BMS): " (str-from-n series-cells)))
         })
     })
+})
+
+; Same request/response shape as fetch-series-cells, on CAN slot 1 so the
+; two can never pick up each other's reply.
+(defun fetch-current-limits () {
+    (if (>= can-id 0) {
+        (var response)
+        (loopwhile-thd 35 (eq response nil) {
+            (setq response (canmsg-recv 1 5))
+        })
+
+        ; Amps x10 as i16, scales applied - those are what the ESC enforces
+        (can-cmd can-id (str-merge
+            "(progn "
+            "(var resp (array-create 8)) "
+            "(bufset-i16 resp 0 (to-i (* 10 (conf-get 'l-current-max) (conf-get 'l-current-max-scale)))) "
+            "(bufset-i16 resp 2 (to-i (* 10 (conf-get 'l-current-min) (conf-get 'l-current-min-scale)))) "
+            "(bufset-i16 resp 4 (to-i (* 10 (conf-get 'l-in-current-max)))) "
+            "(bufset-i16 resp 6 (to-i (* 10 (conf-get 'l-in-current-min)))) "
+            "(canmsg-send " (str-from-n (can-local-id)) " 1 resp) "
+            "(free resp))"
+        ))
+
+        (loopwhile (eq response nil) {
+            (sleep 0.01)
+        })
+
+        (if (not (eq response 'timeout)) {
+            (setq esc-motor-current-max (abs (/ (bufget-i16 response 0) 10.0)))
+            (setq esc-motor-current-min (abs (/ (bufget-i16 response 2) 10.0)))
+            (setq esc-bat-current-max (abs (/ (bufget-i16 response 4) 10.0)))
+            (setq esc-bat-current-min (abs (/ (bufget-i16 response 6) 10.0)))
+            (print (str-merge "ESC current limits: motor "
+                (str-from-n esc-motor-current-max "%.0f") "/-" (str-from-n esc-motor-current-min "%.0f")
+                " A, battery " (str-from-n esc-bat-current-max "%.0f") "/-" (str-from-n esc-bat-current-min "%.0f") " A"))
+        } {
+            (print "ESC query for current limits timed out")
+        })
+    })
+})
+
+; Current as a fraction of the ESC limit, -1..1, 0 while the limits are
+; unknown. Negative means braking or regen, measured against the min limit.
+; Refloat's tot-current is already braking-negative in either direction.
+(defun phase-utilization () {
+    (var braking (< tot-current 0))
+    (var lim (if braking esc-motor-current-min esc-motor-current-max))
+    (var u (if (> lim 0) (min 1.0 (/ (abs tot-current) lim)) 0.0))
+    (if braking (- u) u)
+})
+
+(defun battery-utilization () {
+    (var regen (< bat-current 0))
+    (var lim (if regen esc-bat-current-min esc-bat-current-max))
+    (var u (if (> lim 0) (min 1.0 (/ (abs bat-current) lim)) 0.0))
+    (if regen (- u) u)
 })
 
 (defun get-voltage-curve (cell-type)
@@ -414,6 +482,7 @@
                 (if (and (< series-cells 1) (> (secs-since last-fetch-cells-time) 10)) {
                     (setq need-fetch-cells t)
                 })
+                (setq need-fetch-limits t)
             })
             (if  (> (buflen data) 3){
                 (var mode (bufget-u8 data 2))
