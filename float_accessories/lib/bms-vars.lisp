@@ -19,6 +19,7 @@
 (def bms-type 0)
 (def bms-rs485-chip 0)
 (def bms-charge-only 0)
+(def bms-timeout 2)
 
 ;vars
 (def cell-count-uninit t)
